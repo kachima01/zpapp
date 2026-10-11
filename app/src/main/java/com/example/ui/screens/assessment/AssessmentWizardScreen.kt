@@ -24,12 +24,14 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Gavel
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -71,13 +73,19 @@ fun AssessmentWizardScreen(
     val formState by viewModel.caseFormState.collectAsState()
     val allocatedTools = viewModel.getAllocatedToolsForCurrentForm()
 
+    // ── Dropdown expansion states ─────────────────────────────────────────────
     var expandedCrimeDropdown by remember { mutableStateOf(false) }
     var expandedDeviceDropdown by remember { mutableStateOf(false) }
     var expandedLockDropdown by remember { mutableStateOf(false) }
     var expandedWarrantDropdown by remember { mutableStateOf(false) }
+    var expandedOsDropdown by remember { mutableStateOf(false) }
+    var expandedEncryptionDropdown by remember { mutableStateOf(false) }
+    var expandedCloudDropdown by remember { mutableStateOf(false) }
+    var expandedCompetenceDropdown by remember { mutableStateOf(false) }
     var attemptedSave by remember { mutableStateOf(false) }
     var showDiscardConfirm by remember { mutableStateOf(false) }
 
+    // ── Option lists ──────────────────────────────────────────────────────────
     val crimeOptions = listOf(
         "Mobile Money Fraud",
         "Computer Hacking & Intrusion",
@@ -87,7 +95,6 @@ fun AssessmentWizardScreen(
         "Active Malware / Live Infection",
         "General Digital Evidence"
     )
-
     val deviceOptions = listOf(
         "Smartphone / Mobile",
         "Computer / Server / HDD",
@@ -95,7 +102,6 @@ fun AssessmentWizardScreen(
         "Volatile Memory / RAM",
         "Cross-Platform Correlation"
     )
-
     val lockOptions = listOf(
         "Passcode Locked",
         "Unlocked",
@@ -103,7 +109,6 @@ fun AssessmentWizardScreen(
         "Pattern / Biometric Unknown",
         "Broken Display"
     )
-
     val warrantOptions = listOf(
         "Full Search Warrant (Sec 118 CPC)",
         "Limited Scope Warrant",
@@ -111,6 +116,24 @@ fun AssessmentWizardScreen(
         "Exigent Circumstances (Sec 22)",
         "Preliminary Preservation"
     )
+    val osOptions = listOf(
+        "Android", "iOS", "Windows", "Linux", "macOS", "Feature Phone", "Other"
+    )
+    val encryptionOptions = listOf(
+        "File-Based (FBE) + Secure Enclave",
+        "Full-Disk (FDE)",
+        "BitLocker",
+        "Unencrypted",
+        "Unknown"
+    )
+    val cloudOptions = listOf(
+        "Cloud Backups Detected",
+        "Cloud Synced Apps",
+        "Local Only",
+        "Unknown"
+    )
+    val competenceOptions = listOf("Basic", "Intermediate", "Advanced")
+
     val isFormValid = formState.caseNumber.isNotBlank() &&
         formState.incidentReference.isNotBlank() &&
         formState.deviceMake.isNotBlank() &&
@@ -122,7 +145,7 @@ fun AssessmentWizardScreen(
             .background(Color(0xFF090E17))
             .testTag("assessment_wizard_screen")
     ) {
-        // TOP APP BAR
+        // ── TOP APP BAR ────────────────────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -141,24 +164,18 @@ fun AssessmentWizardScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
                     Text(
-                        text = "New case",
+                        text = "New Case",
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Case details and tool recommendation",
+                        text = "Forensic assessment & tool recommendation",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color(0xFF10B981)
                     )
                 }
             }
-
-            Text(
-                text = "Step 1 of 3",
-                style = MaterialTheme.typography.labelMedium,
-                color = Color(0xFF94A3B8)
-            )
         }
 
         LazyColumn(
@@ -167,325 +184,351 @@ fun AssessmentWizardScreen(
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // CASE IDENTIFIERS
+            // ── SECTION 1: CASE IDENTIFIERS ──────────────────────────────────
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Color(0xFF1E293B))
+                SectionCard(
+                    icon = { Icon(Icons.Default.Shield, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(18.dp)) },
+                    label = "CASE DETAILS",
+                    labelColor = Color(0xFF38BDF8)
                 ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Shield, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "CASE DETAILS",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFF38BDF8),
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("CASE NUMBER", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                OutlinedTextField(
-                                    value = formState.caseNumber,
-                                    onValueChange = { viewModel.updateCaseForm(caseNumber = it) },
-                                    modifier = Modifier.fillMaxWidth().testTag("input_case_number"),
-                                    singleLine = true,
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = fieldColors()
-                                )
-                            }
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("DOCKET REF", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                OutlinedTextField(
-                                    value = formState.incidentReference,
-                                    onValueChange = { viewModel.updateCaseForm(incidentRef = it) },
-                                    modifier = Modifier.fillMaxWidth().testTag("input_docket_ref"),
-                                    singleLine = true,
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = fieldColors()
-                                )
-                            }
-                        }
-
-                        if (attemptedSave && (formState.caseNumber.isBlank() || formState.incidentReference.isBlank())) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Enter both the case number and docket reference before saving.",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Crime Type Dropdown
-                        Text("CRIME CATEGORY", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { expandedCrimeDropdown = true }
-                                    .testTag("dropdown_crime"),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFF131D31)),
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            FieldLabel("CASE NUMBER")
+                            OutlinedTextField(
+                                value = formState.caseNumber,
+                                onValueChange = { viewModel.updateCaseForm(caseNumber = it) },
+                                modifier = Modifier.fillMaxWidth().testTag("input_case_number"),
+                                singleLine = true,
                                 shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(1.dp, Color(0xFF1E293B))
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(12.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(formState.crimeType, color = Color.White, style = MaterialTheme.typography.bodyMedium)
-                                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color(0xFF94A3B8))
-                                }
-                            }
-                            DropdownMenu(
-                                expanded = expandedCrimeDropdown,
-                                onDismissRequest = { expandedCrimeDropdown = false },
-                                modifier = Modifier.fillMaxWidth().background(Color(0xFF131D31))
-                            ) {
-                                crimeOptions.forEach { option ->
-                                    DropdownMenuItem(
-                                        text = { Text(option, color = Color.White) },
-                                        onClick = {
-                                            viewModel.updateCaseForm(crimeType = option)
-                                            expandedCrimeDropdown = false
-                                        }
-                                    )
-                                }
-                            }
+                                colors = fieldColors()
+                            )
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            FieldLabel("DOCKET REF")
+                            OutlinedTextField(
+                                value = formState.incidentReference,
+                                onValueChange = { viewModel.updateCaseForm(incidentRef = it) },
+                                modifier = Modifier.fillMaxWidth().testTag("input_docket_ref"),
+                                singleLine = true,
+                                shape = RoundedCornerShape(8.dp),
+                                colors = fieldColors()
+                            )
                         }
                     }
+
+                    if (attemptedSave && (formState.caseNumber.isBlank() || formState.incidentReference.isBlank())) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text("Enter both the case number and docket reference.", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    FieldLabel("CRIME CATEGORY")
+                    SimpleDropdown(
+                        selected = formState.crimeType,
+                        options = crimeOptions,
+                        expanded = expandedCrimeDropdown,
+                        onExpand = { expandedCrimeDropdown = true },
+                        onDismiss = { expandedCrimeDropdown = false },
+                        onSelect = { viewModel.updateCaseForm(crimeType = it); expandedCrimeDropdown = false },
+                        testTag = "dropdown_crime"
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            FieldLabel("INCIDENT LOCATION")
+                            OutlinedTextField(
+                                value = formState.incidentLocation,
+                                onValueChange = { viewModel.updateCaseForm(incidentLocation = it) },
+                                modifier = Modifier.fillMaxWidth().testTag("input_incident_location"),
+                                singleLine = true,
+                                shape = RoundedCornerShape(8.dp),
+                                colors = fieldColors()
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    FieldLabel("SUSPECT INFORMATION (optional)")
+                    OutlinedTextField(
+                        value = formState.suspectInfo,
+                        onValueChange = { viewModel.updateCaseForm(suspectInfo = it) },
+                        modifier = Modifier.fillMaxWidth().testTag("input_suspect_info"),
+                        singleLine = false,
+                        minLines = 2,
+                        shape = RoundedCornerShape(8.dp),
+                        placeholder = { Text("Name, alias, role…", color = Color(0xFF475569)) },
+                        colors = fieldColors()
+                    )
                 }
             }
 
-            // TARGET EVIDENCE & DEVICE SPECS
+            // ── SECTION 2: EVIDENCE DEVICE ────────────────────────────────────
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Color(0xFF1E293B))
+                SectionCard(
+                    icon = { Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(18.dp)) },
+                    label = "EVIDENCE DEVICE",
+                    labelColor = Color(0xFF10B981)
                 ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "EVIDENCE DEVICE",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFF10B981),
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Bold
+                    FieldLabel("EVIDENCE CATEGORY")
+                    SimpleDropdown(
+                        selected = formState.deviceType,
+                        options = deviceOptions,
+                        expanded = expandedDeviceDropdown,
+                        onExpand = { expandedDeviceDropdown = true },
+                        onDismiss = { expandedDeviceDropdown = false },
+                        onSelect = { viewModel.updateCaseForm(deviceType = it); expandedDeviceDropdown = false },
+                        testTag = "dropdown_device_type"
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            FieldLabel("MAKE")
+                            OutlinedTextField(
+                                value = formState.deviceMake,
+                                onValueChange = { viewModel.updateCaseForm(deviceMake = it) },
+                                modifier = Modifier.fillMaxWidth().testTag("input_device_make"),
+                                singleLine = true,
+                                shape = RoundedCornerShape(8.dp),
+                                colors = fieldColors()
                             )
                         }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // Evidence / Device Type Dropdown
-                        Text("EVIDENCE CATEGORY", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { expandedDeviceDropdown = true }
-                                    .testTag("dropdown_device_type"),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFF131D31)),
+                        Column(modifier = Modifier.weight(1f)) {
+                            FieldLabel("MODEL")
+                            OutlinedTextField(
+                                value = formState.deviceModel,
+                                onValueChange = { viewModel.updateCaseForm(deviceModel = it) },
+                                modifier = Modifier.fillMaxWidth().testTag("input_device_model"),
+                                singleLine = true,
                                 shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(1.dp, Color(0xFF1E293B))
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(12.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(formState.deviceType, color = Color.White, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color(0xFF94A3B8))
-                                }
-                            }
-                            DropdownMenu(
-                                expanded = expandedDeviceDropdown,
-                                onDismissRequest = { expandedDeviceDropdown = false },
-                                modifier = Modifier.fillMaxWidth().background(Color(0xFF131D31))
-                            ) {
-                                deviceOptions.forEach { option ->
-                                    DropdownMenuItem(
-                                        text = { Text(option, color = Color.White) },
-                                        onClick = {
-                                            viewModel.updateCaseForm(deviceType = option)
-                                            expandedDeviceDropdown = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("MAKE", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                OutlinedTextField(
-                                    value = formState.deviceMake,
-                                    onValueChange = { viewModel.updateCaseForm(deviceMake = it) },
-                                    modifier = Modifier.fillMaxWidth().testTag("input_device_make"),
-                                    singleLine = true,
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = fieldColors()
-                                )
-                            }
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("MODEL", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                OutlinedTextField(
-                                    value = formState.deviceModel,
-                                    onValueChange = { viewModel.updateCaseForm(deviceModel = it) },
-                                    modifier = Modifier.fillMaxWidth().testTag("input_device_model"),
-                                    singleLine = true,
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = fieldColors()
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Lock Status Dropdown
-                        Text("DEVICE LOCK STATUS", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { expandedLockDropdown = true }
-                                    .testTag("dropdown_lock"),
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFF131D31)),
-                                shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(1.dp, Color(0xFF1E293B))
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth().padding(12.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(formState.lockStatus, color = Color.White, style = MaterialTheme.typography.bodyMedium)
-                                    Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color(0xFF94A3B8))
-                                }
-                            }
-                            DropdownMenu(
-                                expanded = expandedLockDropdown,
-                                onDismissRequest = { expandedLockDropdown = false },
-                                modifier = Modifier.fillMaxWidth().background(Color(0xFF131D31))
-                            ) {
-                                lockOptions.forEach { option ->
-                                    DropdownMenuItem(
-                                        text = { Text(option, color = Color.White) },
-                                        onClick = {
-                                            viewModel.updateCaseForm(lockStatus = option)
-                                            expandedLockDropdown = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Cloud scope toggle
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFF131D31), RoundedCornerShape(8.dp))
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Cloud access authorised", style = MaterialTheme.typography.bodyMedium, color = Color.White, fontWeight = FontWeight.Medium)
-                                Text("Include cloud-backed evidence", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8))
-                            }
-                            Switch(
-                                checked = formState.cloudScopeAuthorized,
-                                onCheckedChange = { viewModel.updateCaseForm(cloudAuthorized = it) },
-                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = Color(0xFF2563EB))
+                                colors = fieldColors()
                             )
                         }
+                    }
 
-                        if (attemptedSave && (formState.deviceMake.isBlank() || formState.deviceModel.isBlank())) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Enter the device make and model before saving.",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodySmall
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    FieldLabel("IMEI / SERIAL NUMBER")
+                    OutlinedTextField(
+                        value = formState.deviceImeiOrSerial,
+                        onValueChange = { viewModel.updateCaseForm(imeiOrSerial = it) },
+                        modifier = Modifier.fillMaxWidth().testTag("input_imei"),
+                        singleLine = true,
+                        shape = RoundedCornerShape(8.dp),
+                        placeholder = { Text("e.g. 358900000000000", color = Color(0xFF475569)) },
+                        colors = fieldColors()
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Column(modifier = Modifier.weight(2f)) {
+                            FieldLabel("OPERATING SYSTEM")
+                            SimpleDropdown(
+                                selected = formState.osType,
+                                options = osOptions,
+                                expanded = expandedOsDropdown,
+                                onExpand = { expandedOsDropdown = true },
+                                onDismiss = { expandedOsDropdown = false },
+                                onSelect = { viewModel.updateCaseForm(osType = it); expandedOsDropdown = false },
+                                testTag = "dropdown_os"
+                            )
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            FieldLabel("VERSION")
+                            OutlinedTextField(
+                                value = formState.osVersion,
+                                onValueChange = { viewModel.updateCaseForm(osVersion = it) },
+                                modifier = Modifier.fillMaxWidth().testTag("input_os_version"),
+                                singleLine = true,
+                                shape = RoundedCornerShape(8.dp),
+                                colors = fieldColors()
                             )
                         }
                     }
                 }
             }
 
-            // Legal authority
+            // ── SECTION 3: DEVICE STATE (KEY ENGINE INPUTS) ───────────────────
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Color(0xFF1E293B))
+                SectionCard(
+                    icon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFFF59E0B), modifier = Modifier.size(18.dp)) },
+                    label = "DEVICE STATE",
+                    labelColor = Color(0xFFF59E0B)
                 ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
-                        Text("LEGAL AUTHORITY", style = MaterialTheme.typography.labelSmall, color = Color(0xFF38BDF8), fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Warrant or authority", style = MaterialTheme.typography.labelMedium, color = Color(0xFF94A3B8))
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            Card(
-                                modifier = Modifier.fillMaxWidth().clickable { expandedWarrantDropdown = true },
-                                colors = CardDefaults.cardColors(containerColor = Color(0xFF131D31)),
-                                shape = RoundedCornerShape(8.dp),
-                                border = BorderStroke(1.dp, Color(0xFF1E293B))
-                            ) {
-                                Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                    Text(formState.warrantType, color = Color.White, style = MaterialTheme.typography.bodyMedium)
-                                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Choose warrant authority", tint = Color(0xFF94A3B8))
-                                }
-                            }
-                            DropdownMenu(
-                                expanded = expandedWarrantDropdown,
-                                onDismissRequest = { expandedWarrantDropdown = false },
-                                modifier = Modifier.fillMaxWidth().background(Color(0xFF131D31))
-                            ) {
-                                warrantOptions.forEach { option ->
-                                    DropdownMenuItem(
-                                        text = { Text(option, color = Color.White) },
-                                        onClick = { viewModel.updateCaseForm(warrantType = option); expandedWarrantDropdown = false }
-                                    )
-                                }
-                            }
+                    FieldLabel("LOCK STATUS")
+                    SimpleDropdown(
+                        selected = formState.lockStatus,
+                        options = listOf(
+                            "Passcode Locked",
+                            "Unlocked",
+                            "BitLocker / Full Disk Encrypted",
+                            "Pattern / Biometric Unknown",
+                            "Broken Display"
+                        ),
+                        expanded = expandedLockDropdown,
+                        onExpand = { expandedLockDropdown = true },
+                        onDismiss = { expandedLockDropdown = false },
+                        onSelect = { viewModel.updateCaseForm(lockStatus = it); expandedLockDropdown = false },
+                        testTag = "dropdown_lock"
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    FieldLabel("ENCRYPTION TYPE")
+                    SimpleDropdown(
+                        selected = formState.encryptionType,
+                        options = encryptionOptions,
+                        expanded = expandedEncryptionDropdown,
+                        onExpand = { expandedEncryptionDropdown = true },
+                        onDismiss = { expandedEncryptionDropdown = false },
+                        onSelect = { viewModel.updateCaseForm(encryptionType = it); expandedEncryptionDropdown = false },
+                        testTag = "dropdown_encryption"
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    FieldLabel("CLOUD DEPENDENCY")
+                    SimpleDropdown(
+                        selected = formState.cloudDependency,
+                        options = cloudOptions,
+                        expanded = expandedCloudDropdown,
+                        onExpand = { expandedCloudDropdown = true },
+                        onDismiss = { expandedCloudDropdown = false },
+                        onSelect = { viewModel.updateCaseForm(cloudDependency = it); expandedCloudDropdown = false },
+                        testTag = "dropdown_cloud_dependency"
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Cloud scope toggle
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF131D31), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Cloud access authorised", style = MaterialTheme.typography.bodyMedium, color = Color.White, fontWeight = FontWeight.Medium)
+                            Text("Warrant covers cloud evidence", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8))
                         }
+                        Switch(
+                            checked = formState.cloudScopeAuthorized,
+                            onCheckedChange = { viewModel.updateCaseForm(cloudAuthorized = it) },
+                            colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = Color(0xFF2563EB))
+                        )
                     }
                 }
             }
 
-            // Recommended tools
+            // ── SECTION 4: LEGAL AUTHORITY ────────────────────────────────────
+            item {
+                SectionCard(
+                    icon = { Icon(Icons.Default.Gavel, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(18.dp)) },
+                    label = "LEGAL AUTHORITY",
+                    labelColor = Color(0xFF38BDF8)
+                ) {
+                    FieldLabel("WARRANT OR AUTHORITY TYPE")
+                    SimpleDropdown(
+                        selected = formState.warrantType,
+                        options = warrantOptions,
+                        expanded = expandedWarrantDropdown,
+                        onExpand = { expandedWarrantDropdown = true },
+                        onDismiss = { expandedWarrantDropdown = false },
+                        onSelect = { viewModel.updateCaseForm(warrantType = it); expandedWarrantDropdown = false },
+                        testTag = "dropdown_warrant"
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    FieldLabel("WARRANT REFERENCE NUMBER")
+                    OutlinedTextField(
+                        value = formState.warrantReference,
+                        onValueChange = { viewModel.updateCaseForm(warrantReference = it) },
+                        modifier = Modifier.fillMaxWidth().testTag("input_warrant_ref"),
+                        singleLine = true,
+                        shape = RoundedCornerShape(8.dp),
+                        placeholder = { Text("e.g. WARR-2025-091", color = Color(0xFF475569)) },
+                        colors = fieldColors()
+                    )
+                }
+            }
+
+            // ── SECTION 5: EXAMINER COMPETENCE ────────────────────────────────
+            item {
+                SectionCard(
+                    icon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFF8B5CF6), modifier = Modifier.size(18.dp)) },
+                    label = "EXAMINER COMPETENCE",
+                    labelColor = Color(0xFF8B5CF6)
+                ) {
+                    FieldLabel("EXAMINER COMPETENCE LEVEL")
+                    SimpleDropdown(
+                        selected = formState.competenceLevel,
+                        options = competenceOptions,
+                        expanded = expandedCompetenceDropdown,
+                        onExpand = { expandedCompetenceDropdown = true },
+                        onDismiss = { expandedCompetenceDropdown = false },
+                        onSelect = { viewModel.updateCaseForm(competenceLevel = it); expandedCompetenceDropdown = false },
+                        testTag = "dropdown_competence"
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    val hint = when (formState.competenceLevel) {
+                        "Basic" -> "Basic: logical / manual methods only; physical extraction requires commercial tool."
+                        "Intermediate" -> "Intermediate: can execute file-system extraction and cloud pulls."
+                        "Advanced" -> "Advanced: full physical acquisition, chip-off, and custom scripts."
+                        else -> ""
+                    }
+                    if (hint.isNotBlank()) {
+                        Text(hint, style = MaterialTheme.typography.labelSmall, color = Color(0xFF64748B))
+                    }
+                }
+            }
+
+            // ── SECTION 6: CHAIN OF CUSTODY ───────────────────────────────────
+            item {
+                SectionCard(
+                    icon = { Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(18.dp)) },
+                    label = "CHAIN OF CUSTODY",
+                    labelColor = Color(0xFF10B981)
+                ) {
+                    CustodyCheckRow(
+                        label = "Faraday isolation confirmed",
+                        subtitle = "Device is shielded from all wireless signals",
+                        checked = formState.isFaradayIsolated,
+                        onCheckedChange = { viewModel.updateCaseForm(isFaradayIsolated = it) },
+                        testTag = "chk_faraday"
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    CustodyCheckRow(
+                        label = "Airplane mode confirmed",
+                        subtitle = "All radios disabled before extraction",
+                        checked = formState.isAirplaneModeConfirmed,
+                        onCheckedChange = { viewModel.updateCaseForm(isAirplaneModeConfirmed = it) },
+                        testTag = "chk_airplane_mode"
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    CustodyCheckRow(
+                        label = "Write-blocker attached",
+                        subtitle = "Hardware write protection active before imaging",
+                        checked = formState.isWriteBlockerAttached,
+                        onCheckedChange = { viewModel.updateCaseForm(isWriteBlockerAttached = it) },
+                        testTag = "chk_write_blocker"
+                    )
+                }
+            }
+
+            // ── SECTION 7: RECOMMENDED TOOLS ─────────────────────────────────
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -577,7 +620,7 @@ fun AssessmentWizardScreen(
                 }
             }
 
-            // PRIMARY SAVE CASE BUTTON
+            // ── SAVE BUTTON ───────────────────────────────────────────────────
             item {
                 Spacer(modifier = Modifier.height(10.dp))
                 Button(
@@ -599,7 +642,7 @@ fun AssessmentWizardScreen(
                     Icon(imageVector = Icons.Default.Save, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (isFormValid) "Save case" else "Complete required fields",
+                        text = if (isFormValid) "Create Case & Run Engine" else "Complete required fields",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.5.sp
@@ -614,7 +657,7 @@ fun AssessmentWizardScreen(
         AlertDialog(
             onDismissRequest = { showDiscardConfirm = false },
             title = { Text("Discard this case draft?") },
-            text = { Text("Your unsaved case details and selected tools will be lost.") },
+            text = { Text("Your case details and selected tools will be lost.") },
             confirmButton = {
                 Button(onClick = onCancel, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
                     Text("Discard")
@@ -623,6 +666,122 @@ fun AssessmentWizardScreen(
             dismissButton = {
                 androidx.compose.material3.TextButton(onClick = { showDiscardConfirm = false }) { Text("Keep editing") }
             }
+        )
+    }
+}
+
+// ── Helper composables ─────────────────────────────────────────────────────────
+
+@Composable
+private fun SectionCard(
+    icon: @Composable () -> Unit,
+    label: String,
+    labelColor: Color,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, Color(0xFF1E293B))
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                icon()
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = labelColor,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Spacer(modifier = Modifier.height(10.dp))
+            content()
+        }
+    }
+}
+
+@Composable
+private fun FieldLabel(text: String) {
+    Text(text, style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8), fontWeight = FontWeight.Bold)
+    Spacer(modifier = Modifier.height(4.dp))
+}
+
+@Composable
+private fun SimpleDropdown(
+    selected: String,
+    options: List<String>,
+    expanded: Boolean,
+    onExpand: () -> Unit,
+    onDismiss: () -> Unit,
+    onSelect: (String) -> Unit,
+    testTag: String
+) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onExpand() }
+                .testTag(testTag),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF131D31)),
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke(1.dp, Color(0xFF1E293B))
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(selected, color = Color.White, style = MaterialTheme.typography.bodyMedium)
+                Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color(0xFF94A3B8))
+            }
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = onDismiss,
+            modifier = Modifier.background(Color(0xFF131D31))
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option, color = Color.White) },
+                    onClick = { onSelect(option) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CustodyCheckRow(
+    label: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    testTag: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF131D31), RoundedCornerShape(8.dp))
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(label, style = MaterialTheme.typography.bodyMedium, color = Color.White, fontWeight = FontWeight.Medium)
+            Text(subtitle, style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8))
+        }
+        Checkbox(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            modifier = Modifier.testTag(testTag),
+            colors = CheckboxDefaults.colors(
+                checkedColor = Color(0xFF10B981),
+                checkmarkColor = Color.White,
+                uncheckedColor = Color(0xFF64748B)
+            )
         )
     }
 }

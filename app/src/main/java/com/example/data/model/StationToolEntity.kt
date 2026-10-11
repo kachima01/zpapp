@@ -11,6 +11,8 @@ data class StationToolEntity(
     val category: String, // Mobile & Cloud, All-in-One, Deep File System, Free & Open-Source, Hardware
     val capabilities: String, // Comma separated: Physical, File-System, Logical, Cloud, Memory Dump, Live Triage
     val isAvailable: Boolean = true,
-    val licenseStatus: String = "ACTIVE", // ACTIVE, EXPIRED, NOT_LICENSED, COMMUNITY_EDITION, HARDWARE_READY
-    val description: String = ""
+    val licenseStatus: String = "ACTIVE", // ACTIVE, EXPIRED, NOT_LICENSED, COMMUNITY_EDITION, HARDWARE_READY, DEPLOYED
+    val description: String = "",
+    val unavailabilityReason: String = "", // Free text: why tool is marked unavailable (maintenance, seized, expired, etc.)
+    val licenseExpiryDate: String = ""    // ISO date string "YYYY-MM-DD" or blank if not applicable
 )

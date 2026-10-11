@@ -225,6 +225,9 @@ fun ZcmffAppRoot(
                         onToggleTool = { id, available ->
                             viewModel.toggleStationTool(id, available)
                         },
+                        onUpdateToolDetails = { tool ->
+                            viewModel.updateStationToolDetails(tool)
+                        },
                         onBack = { currentScreen = AppScreen.DASHBOARD }
                     )
                 }

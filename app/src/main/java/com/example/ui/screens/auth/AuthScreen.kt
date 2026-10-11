@@ -103,7 +103,7 @@ fun AuthScreen(
             )
 
             Text(
-                text = "Police Decision Support System • Offline SQLite",
+                text = "Police decision support workspace",
                 style = MaterialTheme.typography.labelSmall,
                 color = Color(0xFF10B981),
                 fontFamily = FontFamily.Monospace,

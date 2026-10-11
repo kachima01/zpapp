@@ -8,8 +8,10 @@ import com.example.data.model.DecisionRecordEntity
 import com.example.data.model.OfficerEntity
 import com.example.data.model.StationToolEntity
 import com.example.data.repository.ForensicRepository
+import com.example.engine.AssessmentInputs
 import com.example.engine.CaseToolAllocator
 import com.example.engine.ToolAllocation
+import com.example.engine.ZcmffDecisionEngine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,28 +25,35 @@ data class CaseFormState(
     val incidentReference: String = "",
     val crimeType: String = "Mobile Money Fraud",
     val deviceType: String = "Smartphone / Mobile",
+    // ── Location & suspect ──────────────────────────────────────────────────
     val incidentLocation: String = "Lusaka Central",
     val suspectInfo: String = "",
+    // ── Device identification ────────────────────────────────────────────────
     val deviceMake: String = "Samsung",
     val deviceModel: String = "Galaxy Device",
     val deviceImeiOrSerial: String = "",
+    // ── Device technical state ───────────────────────────────────────────────
     val osType: String = "Android",
     val osVersion: String = "14.0",
     val lockStatus: String = "Passcode Locked",
     val encryptionType: String = "File-Based (FBE) + Secure Enclave",
     val cloudDependency: String = "Cloud Backups Detected",
+    // ── Examiner & legal ─────────────────────────────────────────────────────
     val competenceLevel: String = "Intermediate",
     val warrantType: String = "Full Search Warrant (Sec 118 CPC)",
-    val warrantReference: String = "WARR-2025-091",
+    val warrantReference: String = "",
     val cloudScopeAuthorized: Boolean = true,
+    // ── Tool selection ───────────────────────────────────────────────────────
     val selectedTools: Set<String> = emptySet(),
+    // ── Examiner identity ────────────────────────────────────────────────────
     val examinerName: String = "",
     val examinerBadge: String = "",
     val examinerRank: String = "Detective Inspector",
     val stationUnit: String = "Forensic Laboratory Unit, Police HQ Lusaka",
-    val isFaradayIsolated: Boolean = true,
-    val isAirplaneModeConfirmed: Boolean = true,
-    val isWriteBlockerAttached: Boolean = true
+    // ── Chain-of-custody checks ──────────────────────────────────────────────
+    val isFaradayIsolated: Boolean = false,
+    val isAirplaneModeConfirmed: Boolean = false,
+    val isWriteBlockerAttached: Boolean = false
 )
 
 class ForensicViewModel(application: Application) : AndroidViewModel(application) {
@@ -67,6 +76,7 @@ class ForensicViewModel(application: Application) : AndroidViewModel(application
     val filterCategory: StateFlow<String> = _filterCategory.asStateFlow()
 
     val allTools: StateFlow<List<StationToolEntity>>
+    val availableTools: StateFlow<List<StationToolEntity>>
     val allRecords: StateFlow<List<DecisionRecordEntity>>
 
     init {
@@ -78,6 +88,9 @@ class ForensicViewModel(application: Application) : AndroidViewModel(application
         )
 
         allTools = repository.allTools
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+        availableTools = repository.availableTools
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
         allRecords = repository.allRecords
@@ -197,7 +210,8 @@ class ForensicViewModel(application: Application) : AndroidViewModel(application
             deviceType = initialDevice,
             deviceMake = "Samsung",
             deviceModel = "Galaxy S22",
-            deviceImeiOrSerial = "3589${(System.currentTimeMillis() % 1000000000)}",
+            deviceImeiOrSerial = "",
+            warrantReference = "",
             examinerName = officer?.fullName ?: "Officer Amon Bili",
             examinerBadge = officer?.officerId ?: "ZP-8842",
             examinerRank = if (officer?.role == "Supervisor") "Senior Detective Inspector" else "Detective Inspector",
@@ -210,13 +224,24 @@ class ForensicViewModel(application: Application) : AndroidViewModel(application
         incidentRef: String = _caseFormState.value.incidentReference,
         crimeType: String = _caseFormState.value.crimeType,
         deviceType: String = _caseFormState.value.deviceType,
+        incidentLocation: String = _caseFormState.value.incidentLocation,
+        suspectInfo: String = _caseFormState.value.suspectInfo,
         deviceMake: String = _caseFormState.value.deviceMake,
         deviceModel: String = _caseFormState.value.deviceModel,
         imeiOrSerial: String = _caseFormState.value.deviceImeiOrSerial,
+        osType: String = _caseFormState.value.osType,
+        osVersion: String = _caseFormState.value.osVersion,
         lockStatus: String = _caseFormState.value.lockStatus,
+        encryptionType: String = _caseFormState.value.encryptionType,
+        cloudDependency: String = _caseFormState.value.cloudDependency,
+        competenceLevel: String = _caseFormState.value.competenceLevel,
         warrantType: String = _caseFormState.value.warrantType,
+        warrantReference: String = _caseFormState.value.warrantReference,
         cloudAuthorized: Boolean = _caseFormState.value.cloudScopeAuthorized,
-        selectedTools: Set<String>? = null
+        selectedTools: Set<String>? = null,
+        isFaradayIsolated: Boolean = _caseFormState.value.isFaradayIsolated,
+        isAirplaneModeConfirmed: Boolean = _caseFormState.value.isAirplaneModeConfirmed,
+        isWriteBlockerAttached: Boolean = _caseFormState.value.isWriteBlockerAttached
     ) {
         val isLocked = !lockStatus.contains("Unlocked", ignoreCase = true)
         val currentTools = selectedTools ?: run {
@@ -234,13 +259,24 @@ class ForensicViewModel(application: Application) : AndroidViewModel(application
             incidentReference = incidentRef,
             crimeType = crimeType,
             deviceType = deviceType,
+            incidentLocation = incidentLocation,
+            suspectInfo = suspectInfo,
             deviceMake = deviceMake,
             deviceModel = deviceModel,
             deviceImeiOrSerial = imeiOrSerial,
+            osType = osType,
+            osVersion = osVersion,
             lockStatus = lockStatus,
+            encryptionType = encryptionType,
+            cloudDependency = cloudDependency,
+            competenceLevel = competenceLevel,
             warrantType = warrantType,
+            warrantReference = warrantReference,
             cloudScopeAuthorized = cloudAuthorized,
-            selectedTools = currentTools
+            selectedTools = currentTools,
+            isFaradayIsolated = isFaradayIsolated,
+            isAirplaneModeConfirmed = isAirplaneModeConfirmed,
+            isWriteBlockerAttached = isWriteBlockerAttached
         )
     }
 
@@ -265,41 +301,53 @@ class ForensicViewModel(application: Application) : AndroidViewModel(application
         )
     }
 
+    /**
+     * Builds AssessmentInputs for the ZcmffDecisionEngine using only the tools
+     * that are currently marked *available* in the station inventory. This ensures
+     * that toggling a tool off in Tool Inventory actually affects recommendations.
+     */
+    private fun buildAssessmentInputs(
+        state: CaseFormState,
+        liveAvailableTools: List<StationToolEntity>
+    ): AssessmentInputs {
+        // Intersect the investigator-selected tools with live-available station tools
+        val availableToolNames = liveAvailableTools.map { it.name }
+        val effectiveTools = state.selectedTools.filter { selected ->
+            availableToolNames.any { avail -> avail.contains(selected, ignoreCase = true) || selected.contains(avail, ignoreCase = true) }
+        }
+        return AssessmentInputs(
+            selectedTools = effectiveTools,
+            osType = state.osType,
+            osVersion = state.osVersion,
+            lockStatus = state.lockStatus,
+            encryptionType = state.encryptionType,
+            cloudDependency = state.cloudDependency,
+            competenceLevel = state.competenceLevel,
+            warrantType = state.warrantType,
+            warrantReference = state.warrantReference,
+            cloudScopeAuthorized = state.cloudScopeAuthorized
+        )
+    }
+
     // Direct SQLite Saving with immediate callback
     fun saveCaseRecord(onSaved: (Long) -> Unit) {
         val state = _caseFormState.value
         val officer = _currentOfficer.value
+        val liveAvailableTools = availableTools.value
 
         val allocated = getAllocatedToolsForCurrentForm()
         val allocatedNames = allocated.map { it.toolName }
         val selected = state.selectedTools.ifEmpty { allocatedNames.toSet() }
 
-        // Compute recommended method
-        val recommendedMethod = when {
-            state.deviceType.contains("Volatile", ignoreCase = true) || state.deviceType.contains("RAM", ignoreCase = true) ->
-                "Volatile Memory Forensics"
-            state.deviceType.contains("Computer", ignoreCase = true) || state.deviceType.contains("HDD", ignoreCase = true) ->
-                "Physical Bit-Stream Disk Imaging"
-            selected.any { it.contains("Cellebrite", ignoreCase = true) || it.contains("XRY", ignoreCase = true) } ->
-                "Physical Bit-Stream Acquisition"
-            selected.any { it.contains("Oxygen", ignoreCase = true) } && state.cloudScopeAuthorized ->
-                "Live Cloud & Smartphone Acquisition"
-            selected.any { it.contains("AXIOM", ignoreCase = true) || it.contains("Belkasoft", ignoreCase = true) } ->
-                "Multi-Artifact Unified Correlation"
-            else -> "Advanced File-System Acquisition"
-        }
+        // ── Run the real ZcmffDecisionEngine ──────────────────────────────────
+        val inputs = buildAssessmentInputs(state, liveAvailableTools)
+        val engineResult = ZcmffDecisionEngine.evaluate(inputs)
 
-        val primaryRationale = when {
-            recommendedMethod.contains("Volatile", ignoreCase = true) ->
-                "Live volatile RAM capture preserves active malware, processes, and unencrypted keys before machine shutdown."
-            recommendedMethod.contains("Disk Imaging", ignoreCase = true) ->
-                "Full bit-stream acquisition preserves unallocated clusters and court-admissible disk hashes."
-            recommendedMethod.contains("Physical", ignoreCase = true) ->
-                "Bit-stream physical dump bypasses secure partitions and recovers deleted database rows."
-            recommendedMethod.contains("Cloud", ignoreCase = true) ->
-                "Live cloud extraction authorizes pulls of authenticated WhatsApp, Google, and iCloud remote backups."
-            else -> "Parses decrypted application packages, SMS transactions, and system logs."
+        // Serialise rejected alternatives for storage
+        val rejectedRaw = engineResult.rejectedAlternatives.joinToString(" | ") { alt ->
+            "${alt.methodName}: ${alt.primaryReason} [${alt.technicalBarrier}]"
         }
+        val cautionsRaw = engineResult.cautionaryGuidance.joinToString(" | ")
 
         val entity = DecisionRecordEntity(
             caseNumber = state.caseNumber.ifBlank { "ZP-CASE-${System.currentTimeMillis() % 100000}" },
@@ -318,14 +366,16 @@ class ForensicViewModel(application: Application) : AndroidViewModel(application
             cloudDependency = state.cloudDependency,
             competenceLevel = state.competenceLevel,
             warrantType = state.warrantType,
-            warrantReference = state.warrantReference,
+            warrantReference = state.warrantReference.ifBlank { "N/A" },
             cloudScopeAuthorized = state.cloudScopeAuthorized,
             allocatedToolsCsv = allocatedNames.joinToString(", "),
             selectedToolsCsv = selected.joinToString(", "),
-            recommendedMethod = recommendedMethod,
-            recommendedToolCategory = state.deviceType,
-            recommendedTools = selected.joinToString(", "),
-            primaryRationale = primaryRationale,
+            recommendedMethod = engineResult.recommendedMethod,
+            recommendedToolCategory = engineResult.recommendedToolCategory,
+            recommendedTools = engineResult.recommendedTools.joinToString(", "),
+            primaryRationale = engineResult.rationale,
+            rejectedAlternativesRaw = rejectedRaw,
+            cautionaryGuidanceCsv = cautionsRaw,
             chainOfCustodyCompleted = state.isFaradayIsolated && state.isAirplaneModeConfirmed,
             officerName = state.examinerName.ifBlank { officer?.fullName ?: "Officer Amon Bili" },
             officerRank = state.examinerRank,
@@ -333,7 +383,8 @@ class ForensicViewModel(application: Application) : AndroidViewModel(application
             stationUnit = state.stationUnit,
             timestamp = System.currentTimeMillis(),
             supervisorStatus = "PENDING_REVIEW",
-            supervisorNotes = ""
+            supervisorNotes = "",
+            supervisorReviewedAt = 0L
         )
 
         viewModelScope.launch {
@@ -351,7 +402,8 @@ class ForensicViewModel(application: Application) : AndroidViewModel(application
             val existing = repository.getRecordByIdDirect(recordId) ?: return@launch
             val updated = existing.copy(
                 supervisorStatus = status,
-                supervisorNotes = notes
+                supervisorNotes = notes,
+                supervisorReviewedAt = System.currentTimeMillis()
             )
             repository.updateDecisionRecord(updated)
         }
@@ -366,6 +418,12 @@ class ForensicViewModel(application: Application) : AndroidViewModel(application
     fun toggleStationTool(id: Long, isAvailable: Boolean) {
         viewModelScope.launch {
             repository.setToolAvailability(id, isAvailable)
+        }
+    }
+
+    fun updateStationToolDetails(tool: StationToolEntity) {
+        viewModelScope.launch {
+            repository.updateTool(tool)
         }
     }
 }

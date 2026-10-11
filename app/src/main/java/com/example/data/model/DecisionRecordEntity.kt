@@ -32,6 +32,7 @@ data class DecisionRecordEntity(
     val recommendedTools: String,
     val primaryRationale: String,
     val rejectedAlternativesRaw: String = "", // Formatted rejected methods & barriers
+    val cautionaryGuidanceCsv: String = "", // Pipe-separated cautionary guidance from engine
     val chainOfCustodyCompleted: Boolean = true,
     val officerName: String,
     val officerRank: String,
@@ -39,5 +40,6 @@ data class DecisionRecordEntity(
     val stationUnit: String,
     val timestamp: Long = System.currentTimeMillis(),
     val supervisorStatus: String = "PENDING_REVIEW", // PENDING_REVIEW, APPROVED, FLAGGED
-    val supervisorNotes: String = ""
+    val supervisorNotes: String = "",
+    val supervisorReviewedAt: Long = 0L // epoch ms; 0 = not yet reviewed (audit trail)
 )

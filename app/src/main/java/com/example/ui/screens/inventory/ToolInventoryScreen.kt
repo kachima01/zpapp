@@ -21,16 +21,28 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -55,10 +67,16 @@ import com.example.ui.theme.TextSecondaryDark
 fun ToolInventoryScreen(
     tools: List<StationToolEntity>,
     onToggleTool: (Long, Boolean) -> Unit,
+    onUpdateToolDetails: ((StationToolEntity) -> Unit)? = null,
     onBack: () -> Unit
 ) {
     val activeCount = tools.count { it.isAvailable }
     val totalCount = tools.size
+
+    // Dialog state for editing unavailability reason
+    var editingTool by remember { mutableStateOf<StationToolEntity?>(null) }
+    var reasonInput by remember { mutableStateOf("") }
+    var expiryInput by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -80,6 +98,7 @@ fun ToolInventoryScreen(
             contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            // ── INFO BANNER ───────────────────────────────────────────────────
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -101,7 +120,7 @@ fun ToolInventoryScreen(
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                                text = "Available tools are considered when the app recommends a collection method.",
+                            text = "Only tools marked Available are considered by the decision engine when recommending an extraction method. Toggle a tool off to exclude it from future recommendations.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = TextPrimaryDark
                         )
@@ -109,6 +128,7 @@ fun ToolInventoryScreen(
                 }
             }
 
+            // ── TOOL CARDS GROUPED BY CATEGORY ────────────────────────────────
             val grouped = tools.groupBy { it.category }
             grouped.forEach { (category, toolList) ->
                 item {
@@ -137,6 +157,7 @@ fun ToolInventoryScreen(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
+                            // Name + toggle
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -178,6 +199,34 @@ fun ToolInventoryScreen(
                                 lineHeight = 19.sp
                             )
 
+                            // Unavailability reason
+                            if (!tool.isAvailable && tool.unavailabilityReason.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Row(verticalAlignment = Alignment.Top) {
+                                    Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFF59E0B), modifier = Modifier.size(13.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = tool.unavailabilityReason,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color(0xFFFDE68A)
+                                    )
+                                }
+                            }
+
+                            // Licence expiry
+                            if (tool.licenseExpiryDate.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF94A3B8), modifier = Modifier.size(12.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Licence expires: ${tool.licenseExpiryDate}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color(0xFF94A3B8)
+                                    )
+                                }
+                            }
+
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Row(
@@ -189,14 +238,32 @@ fun ToolInventoryScreen(
                                     text = if (tool.isAvailable) "AVAILABLE" else "UNAVAILABLE",
                                     type = if (tool.isAvailable) BadgeType.SUCCESS else BadgeType.NEUTRAL
                                 )
-                                HighContrastBadge(
-                                    text = tool.licenseStatus,
-                                    type = when (tool.licenseStatus) {
-                                        "ACTIVE", "HARDWARE_READY" -> BadgeType.PRIMARY
-                                        "COMMUNITY_EDITION" -> BadgeType.WARNING
-                                        else -> BadgeType.NEUTRAL
+                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    HighContrastBadge(
+                                        text = tool.licenseStatus,
+                                        type = when (tool.licenseStatus) {
+                                            "ACTIVE", "HARDWARE_READY", "DEPLOYED" -> BadgeType.PRIMARY
+                                            "COMMUNITY_EDITION" -> BadgeType.WARNING
+                                            "EXPIRED", "NOT_LICENSED" -> BadgeType.NEUTRAL
+                                            else -> BadgeType.NEUTRAL
+                                        }
+                                    )
+                                    // Edit details button (shown when onUpdateToolDetails provided)
+                                    if (onUpdateToolDetails != null) {
+                                        OutlinedButton(
+                                            onClick = {
+                                                editingTool = tool
+                                                reasonInput = tool.unavailabilityReason
+                                                expiryInput = tool.licenseExpiryDate
+                                            },
+                                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                            modifier = Modifier.height(28.dp),
+                                            border = BorderStroke(1.dp, Color(0xFF334155))
+                                        ) {
+                                            Text("Details", color = Color(0xFF94A3B8), style = MaterialTheme.typography.labelSmall)
+                                        }
                                     }
-                                )
+                                }
                             }
                         }
                     }
@@ -204,4 +271,70 @@ fun ToolInventoryScreen(
             }
         }
     }
+
+    // ── TOOL DETAILS EDIT DIALOG ──────────────────────────────────────────────
+    editingTool?.let { tool ->
+        AlertDialog(
+            onDismissRequest = { editingTool = null },
+            containerColor = Color(0xFF0F172A),
+            title = {
+                Text(tool.name, color = Color.White, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall)
+            },
+            text = {
+                Column {
+                    Text("UNAVAILABILITY REASON", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OutlinedTextField(
+                        value = reasonInput,
+                        onValueChange = { reasonInput = it },
+                        placeholder = { Text("e.g. Sent for calibration, licence lapsed…", color = Color(0xFF475569)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = fieldColors()
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("LICENCE EXPIRY DATE (YYYY-MM-DD)", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OutlinedTextField(
+                        value = expiryInput,
+                        onValueChange = { expiryInput = it },
+                        placeholder = { Text("e.g. 2026-12-31", color = Color(0xFF475569)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        colors = fieldColors()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onUpdateToolDetails?.invoke(
+                            tool.copy(
+                                unavailabilityReason = reasonInput.trim(),
+                                licenseExpiryDate = expiryInput.trim()
+                            )
+                        )
+                        editingTool = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { editingTool = null }) {
+                    Text("Cancel", color = Color.White)
+                }
+            }
+        )
+    }
 }
+
+@Composable
+private fun fieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedContainerColor = Color(0xFF131D31),
+    unfocusedContainerColor = Color(0xFF131D31),
+    focusedTextColor = Color.White,
+    unfocusedTextColor = Color.White,
+    focusedBorderColor = Color(0xFF2563EB),
+    unfocusedBorderColor = Color(0xFF334155)
+)

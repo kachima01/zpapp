@@ -171,7 +171,7 @@ fun SecurityDashboardScreen(
             }
         }
 
-        // SECTION HEADER: CASES IN SQLITE
+        // Recent cases
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
