@@ -40,7 +40,7 @@ data class CaseFormState(
     val cloudDependency: String = "Cloud Backups Detected",
     // ── Examiner & legal ─────────────────────────────────────────────────────
     val competenceLevel: String = "Intermediate",
-    val warrantType: String = "Full Search Warrant (Sec 118 CPC)",
+    val warrantType: String = "Warrant",
     val warrantReference: String = "",
     val cloudScopeAuthorized: Boolean = true,
     // ── Tool selection ───────────────────────────────────────────────────────

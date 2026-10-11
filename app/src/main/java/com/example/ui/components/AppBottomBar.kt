@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
@@ -35,7 +36,7 @@ fun AppBottomBar(
 }
 
 @Composable
-fun BottomNavItem(
+private fun RowScope.BottomNavItem(
     title: String,
     icon: ImageVector,
     isSelected: Boolean,
@@ -44,7 +45,7 @@ fun BottomNavItem(
     NavigationBarItem(
         selected = isSelected,
         onClick = onClick,
-        icon = { Icon(icon, contentDescription = null) },
+        icon = { Icon(icon, contentDescription = title) },
         label = { Text(title, style = MaterialTheme.typography.labelMedium) },
         modifier = Modifier.testTag("nav_item_${title.lowercase()}")
     )

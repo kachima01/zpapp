@@ -45,4 +45,7 @@ interface DecisionRecordDao {
 
     @Query("SELECT COUNT(*) FROM decision_records")
     fun getCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM decision_records")
+    suspend fun getCountDirect(): Int
 }

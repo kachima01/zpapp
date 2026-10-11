@@ -285,6 +285,25 @@ fun SecurityDashboardScreen(
                             fontWeight = FontWeight.Medium
                         )
 
+                        if (record.allocatedToolsCsv.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.Build,
+                                    contentDescription = null,
+                                    tint = Color(0xFF38BDF8),
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Allocated: ${record.allocatedToolsCsv}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color(0xFF93C5FD),
+                                    maxLines = 1
+                                )
+                            }
+                        }
+
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Row(

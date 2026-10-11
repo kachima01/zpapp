@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Search
@@ -250,6 +251,25 @@ fun CaseRegistryScreen(
                                 color = Color.White,
                                 fontWeight = FontWeight.Medium
                             )
+
+                            if (record.allocatedToolsCsv.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Build,
+                                        contentDescription = null,
+                                        tint = Color(0xFF38BDF8),
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Tools: ${record.allocatedToolsCsv}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color(0xFF93C5FD),
+                                        maxLines = 1
+                                    )
+                                }
+                            }
 
                             Spacer(modifier = Modifier.height(4.dp))
 
