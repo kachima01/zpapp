@@ -1,0 +1,6 @@
+{
+  "name": "ZCMFF Forensics",
+  "description": "Zambia Context-Aware Mobile Forensic Framework decision-support mobile application for law enforcement investigators.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
