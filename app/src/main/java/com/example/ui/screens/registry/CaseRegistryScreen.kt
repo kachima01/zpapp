@@ -21,7 +21,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Search
@@ -46,6 +45,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.DecisionRecordEntity
+import com.example.ui.components.BadgeType
+import com.example.ui.components.HighContrastBadge
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -95,9 +96,6 @@ fun CaseRegistryScreen(
                 }
             }
 
-            IconButton(onClick = onStartNewAssessment) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Case", tint = Color(0xFF38BDF8))
-            }
         }
 
         // SEARCH BAR
@@ -265,18 +263,20 @@ fun CaseRegistryScreen(
                                     style = MaterialTheme.typography.labelSmall,
                                     color = Color(0xFF10B981)
                                 )
-                                Text(
-                                    text = record.supervisorStatus,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (record.supervisorStatus == "APPROVED") Color(0xFF10B981) else Color(0xFFFBBF24),
-                                    fontWeight = FontWeight.Bold
+                                HighContrastBadge(
+                                    text = record.supervisorStatus.replace('_', ' '),
+                                    type = when (record.supervisorStatus) {
+                                        "APPROVED" -> BadgeType.SUCCESS
+                                        "FLAGGED" -> BadgeType.ERROR
+                                        else -> BadgeType.WARNING
+                                    }
                                 )
                             }
                         }
                     }
                 }
                 item {
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(96.dp))
                 }
             }
         }

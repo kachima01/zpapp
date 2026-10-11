@@ -3,6 +3,8 @@ package com.example.ui.screens.profile
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +30,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -46,7 +49,9 @@ import com.example.ui.components.SectionCard
 fun ProfileScreen(
     currentOfficer: OfficerEntity?,
     totalCasesCount: Int,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onOpenReference: () -> Unit,
+    onOpenLegalFramework: () -> Unit
 ) {
     val name = currentOfficer?.fullName ?: "Officer Amon Bili"
     val role = currentOfficer?.role ?: "Investigator"
@@ -58,6 +63,7 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(Color(0xFF0A101D))
             .padding(18.dp)
+            .verticalScroll(rememberScrollState())
             .testTag("profile_screen"),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -118,7 +124,20 @@ fun ProfileScreen(
             DetailRow(label = "Evidentiary Standard", value = "ISO/IEC 27037 Contemporaneous Logging")
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        SectionCard(title = "REFERENCE & GOVERNANCE", icon = Icons.Default.Shield) {
+            Text(
+                text = "Consult legal authority, tool guidance, and the decision-support framework without leaving the app.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF94A3B8)
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = onOpenReference, modifier = Modifier.weight(1f)) { Text("Reference library") }
+                OutlinedButton(onClick = onOpenLegalFramework, modifier = Modifier.weight(1f)) { Text("Legal framework") }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Logout Button
         Button(

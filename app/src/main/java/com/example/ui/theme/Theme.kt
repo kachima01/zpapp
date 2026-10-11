@@ -29,6 +29,10 @@ private val ForensicDarkColorScheme = darkColorScheme(
     surfaceVariant = DarkSurfaceElevated,
     onSurfaceVariant = TextSecondaryDark,
 
+    surfaceContainerLowest = DarkBackground,
+    surfaceContainerLow = DarkSurface,
+    surfaceContainer = DarkSurfaceElevated,
+    surfaceContainerHigh = DarkSurfaceHighlight,
     surfaceContainerHighest = DarkSurfaceHighlight,
 
     outline = HighContrastBorder,

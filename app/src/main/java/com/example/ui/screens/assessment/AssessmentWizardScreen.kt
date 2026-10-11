@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -74,6 +75,8 @@ fun AssessmentWizardScreen(
     var expandedDeviceDropdown by remember { mutableStateOf(false) }
     var expandedLockDropdown by remember { mutableStateOf(false) }
     var expandedWarrantDropdown by remember { mutableStateOf(false) }
+    var attemptedSave by remember { mutableStateOf(false) }
+    var showDiscardConfirm by remember { mutableStateOf(false) }
 
     val crimeOptions = listOf(
         "Mobile Money Fraud",
@@ -108,6 +111,10 @@ fun AssessmentWizardScreen(
         "Exigent Circumstances (Sec 22)",
         "Preliminary Preservation"
     )
+    val isFormValid = formState.caseNumber.isNotBlank() &&
+        formState.incidentReference.isNotBlank() &&
+        formState.deviceMake.isNotBlank() &&
+        formState.deviceModel.isNotBlank()
 
     Column(
         modifier = Modifier
@@ -124,7 +131,7 @@ fun AssessmentWizardScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onCancel, modifier = Modifier.size(40.dp)) {
+                IconButton(onClick = { showDiscardConfirm = true }, modifier = Modifier.size(48.dp)) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back",
@@ -147,26 +154,11 @@ fun AssessmentWizardScreen(
                 }
             }
 
-            // Direct Save Button in Header
-            Button(
-                onClick = {
-                    viewModel.saveCaseRecord { recordId ->
-                        onComplete(recordId)
-                    }
-                },
-                modifier = Modifier
-                    .height(38.dp)
-                    .testTag("header_save_button"),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF10B981),
-                    contentColor = Color.White
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("SAVE CASE", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-            }
+            Text(
+                text = "Step 1 of 3",
+                style = MaterialTheme.typography.labelMedium,
+                color = Color(0xFF94A3B8)
+            )
         }
 
         LazyColumn(
@@ -229,6 +221,15 @@ fun AssessmentWizardScreen(
                             }
                         }
 
+                        if (attemptedSave && (formState.caseNumber.isBlank() || formState.incidentReference.isBlank())) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Enter both the case number and docket reference before saving.",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+
                         Spacer(modifier = Modifier.height(12.dp))
 
                         // Crime Type Dropdown
@@ -256,7 +257,7 @@ fun AssessmentWizardScreen(
                             DropdownMenu(
                                 expanded = expandedCrimeDropdown,
                                 onDismissRequest = { expandedCrimeDropdown = false },
-                                modifier = Modifier.background(Color(0xFF131D31))
+                                modifier = Modifier.fillMaxWidth().background(Color(0xFF131D31))
                             ) {
                                 crimeOptions.forEach { option ->
                                     DropdownMenuItem(
@@ -321,7 +322,7 @@ fun AssessmentWizardScreen(
                             DropdownMenu(
                                 expanded = expandedDeviceDropdown,
                                 onDismissRequest = { expandedDeviceDropdown = false },
-                                modifier = Modifier.background(Color(0xFF131D31))
+                                modifier = Modifier.fillMaxWidth().background(Color(0xFF131D31))
                             ) {
                                 deviceOptions.forEach { option ->
                                     DropdownMenuItem(
@@ -395,7 +396,7 @@ fun AssessmentWizardScreen(
                             DropdownMenu(
                                 expanded = expandedLockDropdown,
                                 onDismissRequest = { expandedLockDropdown = false },
-                                modifier = Modifier.background(Color(0xFF131D31))
+                                modifier = Modifier.fillMaxWidth().background(Color(0xFF131D31))
                             ) {
                                 lockOptions.forEach { option ->
                                     DropdownMenuItem(
@@ -429,6 +430,56 @@ fun AssessmentWizardScreen(
                                 onCheckedChange = { viewModel.updateCaseForm(cloudAuthorized = it) },
                                 colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = Color(0xFF2563EB))
                             )
+                        }
+
+                        if (attemptedSave && (formState.deviceMake.isBlank() || formState.deviceModel.isBlank())) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Enter the device make and model before saving.",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
+                }
+            }
+
+            // ALLOCATED TOOLS FOR THIS CASE (DYNAMICALLY CALCULATED)
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, Color(0xFF1E293B))
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Text("LEGAL AUTHORITY", style = MaterialTheme.typography.labelSmall, color = Color(0xFF38BDF8), fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Warrant or authority", style = MaterialTheme.typography.labelMedium, color = Color(0xFF94A3B8))
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth().clickable { expandedWarrantDropdown = true },
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFF131D31)),
+                                shape = RoundedCornerShape(8.dp),
+                                border = BorderStroke(1.dp, Color(0xFF1E293B))
+                            ) {
+                                Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                    Text(formState.warrantType, color = Color.White, style = MaterialTheme.typography.bodyMedium)
+                                    Icon(Icons.Default.ArrowDropDown, contentDescription = "Choose warrant authority", tint = Color(0xFF94A3B8))
+                                }
+                            }
+                            DropdownMenu(
+                                expanded = expandedWarrantDropdown,
+                                onDismissRequest = { expandedWarrantDropdown = false },
+                                modifier = Modifier.fillMaxWidth().background(Color(0xFF131D31))
+                            ) {
+                                warrantOptions.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(option, color = Color.White) },
+                                        onClick = { viewModel.updateCaseForm(warrantType = option); expandedWarrantDropdown = false }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -531,10 +582,10 @@ fun AssessmentWizardScreen(
                 Spacer(modifier = Modifier.height(10.dp))
                 Button(
                     onClick = {
-                        viewModel.saveCaseRecord { recordId ->
-                            onComplete(recordId)
-                        }
+                        attemptedSave = true
+                        if (isFormValid) viewModel.saveCaseRecord { recordId -> onComplete(recordId) }
                     },
+                    enabled = isFormValid || !attemptedSave,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp)
@@ -548,7 +599,7 @@ fun AssessmentWizardScreen(
                     Icon(imageVector = Icons.Default.Save, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "SAVE CASE TO SQLITE",
+                        text = if (isFormValid) "Save case" else "Complete required fields",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.5.sp
@@ -557,6 +608,22 @@ fun AssessmentWizardScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
+    }
+
+    if (showDiscardConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDiscardConfirm = false },
+            title = { Text("Discard this case draft?") },
+            text = { Text("Your unsaved case details and selected tools will be lost.") },
+            confirmButton = {
+                Button(onClick = onCancel, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
+                    Text("Discard")
+                }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { showDiscardConfirm = false }) { Text("Keep editing") }
+            }
+        )
     }
 }
 

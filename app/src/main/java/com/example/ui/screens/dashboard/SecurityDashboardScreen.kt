@@ -48,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.DecisionRecordEntity
 import com.example.data.model.OfficerEntity
+import com.example.ui.components.BadgeType
+import com.example.ui.components.HighContrastBadge
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -169,75 +171,6 @@ fun SecurityDashboardScreen(
             }
         }
 
-        // PRIMARY ACTION: + NEW FORENSIC CASE
-        item {
-            Button(
-                onClick = onInitializeCase,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .testTag("btn_initialize_new_case"),
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF2563EB),
-                    contentColor = Color.White
-                )
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "NEW FORENSIC CASE",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 0.5.sp
-                )
-            }
-        }
-
-        // SECONDARY QUICK ACTION BUTTONS
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onViewAllCases,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(44.dp)
-                        .testTag("btn_all_cases"),
-                    border = BorderStroke(1.dp, Color(0xFF1E293B)),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color(0xFF0F172A),
-                        contentColor = Color.White
-                    )
-                ) {
-                    Icon(Icons.Default.Folder, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color(0xFF38BDF8))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("All Cases ($totalCases)", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                }
-
-                OutlinedButton(
-                    onClick = onViewInventory,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(44.dp)
-                        .testTag("btn_tool_inventory"),
-                    border = BorderStroke(1.dp, Color(0xFF1E293B)),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = Color(0xFF0F172A),
-                        contentColor = Color.White
-                    )
-                ) {
-                    Icon(Icons.Default.Build, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color(0xFF10B981))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Tool Inventory", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-
         // SECTION HEADER: CASES IN SQLITE
         item {
             Row(
@@ -333,26 +266,14 @@ fun SecurityDashboardScreen(
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold
                             )
-                            Box(
-                                modifier = Modifier
-                                    .background(
-                                        if (record.supervisorStatus == "APPROVED") Color(0xFF0B2920) else Color(0xFF2C200C),
-                                        RoundedCornerShape(4.dp)
-                                    )
-                                    .border(
-                                        1.dp,
-                                        if (record.supervisorStatus == "APPROVED") Color(0xFF10B981) else Color(0xFFFBBF24),
-                                        RoundedCornerShape(4.dp)
-                                    )
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text(
-                                    text = record.supervisorStatus,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = if (record.supervisorStatus == "APPROVED") Color(0xFF10B981) else Color(0xFFFBBF24),
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                            HighContrastBadge(
+                                text = record.supervisorStatus.replace('_', ' '),
+                                type = when (record.supervisorStatus) {
+                                    "APPROVED" -> BadgeType.SUCCESS
+                                    "FLAGGED" -> BadgeType.ERROR
+                                    else -> BadgeType.WARNING
+                                }
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(4.dp))
@@ -387,7 +308,7 @@ fun SecurityDashboardScreen(
             }
         }
         item {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(96.dp))
         }
     }
 }

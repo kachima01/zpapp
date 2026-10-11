@@ -69,7 +69,8 @@ fun DecisionRecordDetailScreen(
     getRecordDirect: suspend (Long) -> DecisionRecordEntity?,
     onBack: () -> Unit,
     onDelete: (Long) -> Unit,
-    onUpdateSupervisor: (Long, String, String) -> Unit
+    onUpdateSupervisor: (Long, String, String) -> Unit,
+    canReview: Boolean
 ) {
     val context = LocalContext.current
     var record by remember(initialRecord) { mutableStateOf(initialRecord) }
@@ -418,24 +419,26 @@ fun DecisionRecordDetailScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Button(
-                        onClick = { showSupervisorDialog = true },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(48.dp)
-                            .testTag("btn_supervisor_review"),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Icon(Icons.Default.Security, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Supervisor Review")
+                    if (canReview) {
+                        Button(
+                            onClick = { showSupervisorDialog = true },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp)
+                                .testTag("btn_supervisor_review"),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(Icons.Default.Security, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Supervisor Review")
+                        }
                     }
 
                     OutlinedButton(
                         onClick = { shareCaseSummary(context, currentRecord) },
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(if (canReview) 1f else 2f)
                             .height(48.dp)
                             .testTag("btn_share_case"),
                         border = BorderStroke(1.dp, Color(0xFF334155)),

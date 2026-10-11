@@ -75,8 +75,8 @@ fun TacticalHeader(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = DarkSurface,
-        border = BorderStroke(1.dp, HighContrastBorder)
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
@@ -104,14 +104,14 @@ fun TacticalHeader(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge,
-                    color = TextPrimaryDark,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
                 )
                 if (subtitle != null) {
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.labelSmall,
-                        color = ForensicCyanPrimary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -126,7 +126,7 @@ fun TacticalHeader(
                     Icon(
                         imageVector = actionIcon,
                         contentDescription = "Action",
-                        tint = ForensicCyanPrimary
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -349,8 +349,8 @@ fun SectionCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF131D31)),
-        border = BorderStroke(1.dp, Color(0xFF1E293B)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -360,9 +360,8 @@ fun SectionCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.labelMedium,
-                    color = Color(0xFF38BDF8),
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.SemiBold
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -388,7 +387,7 @@ fun DetailRow(
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF94A3B8),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
         Text(

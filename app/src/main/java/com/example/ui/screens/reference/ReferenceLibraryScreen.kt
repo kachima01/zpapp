@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -44,6 +45,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.components.TacticalHeader
 
 data class ReferenceItem(
     val title: String,
@@ -52,7 +54,7 @@ data class ReferenceItem(
 )
 
 @Composable
-fun ReferenceLibraryScreen() {
+fun ReferenceLibraryScreen(onBack: () -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedTab by remember { mutableStateOf("LEGAL") } // "LEGAL", "TOOLS", "NIST"
 
@@ -139,6 +141,13 @@ fun ReferenceLibraryScreen() {
             .padding(16.dp)
             .testTag("reference_library_screen")
     ) {
+        TacticalHeader(
+            title = "Reference library",
+            subtitle = "Legal guidance, tools, and standards",
+            navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+            onNavigationClick = onBack
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         // Search bar
         OutlinedTextField(
             value = searchQuery,
