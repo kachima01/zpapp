@@ -68,7 +68,7 @@ fun ToolInventoryScreen(
     ) {
         TacticalHeader(
             title = "Station Tool Inventory",
-            subtitle = "$activeCount of $totalCount forensic suites currently active",
+            subtitle = "$activeCount of $totalCount tools available",
             navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
             onNavigationClick = onBack
         )
@@ -92,7 +92,7 @@ fun ToolInventoryScreen(
                             Icon(imageVector = Icons.Default.Info, contentDescription = null, tint = ForensicCyanPrimary, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "STATION LABORATORY READINESS",
+                                text = "TOOL AVAILABILITY",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = ForensicCyanPrimary,
                                 fontFamily = FontFamily.Monospace,
@@ -101,7 +101,7 @@ fun ToolInventoryScreen(
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "Toggle active licenses and hardware kits available at your station. The ZCMFF Decision Engine strictly checks this inventory before recommending physical, logical, or cloud pathways.",
+                                text = "Available tools are considered when the app recommends a collection method.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = TextPrimaryDark
                         )
@@ -186,7 +186,7 @@ fun ToolInventoryScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 HighContrastBadge(
-                                    text = if (tool.isAvailable) "READY IN STATION" else "NOT AVAILABLE",
+                                    text = if (tool.isAvailable) "AVAILABLE" else "UNAVAILABLE",
                                     type = if (tool.isAvailable) BadgeType.SUCCESS else BadgeType.NEUTRAL
                                 )
                                 HighContrastBadge(

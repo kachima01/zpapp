@@ -120,7 +120,7 @@ fun SecurityDashboardScreen(
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             Text(
-                                text = "SQLite Connected",
+                                text = "Offline ready",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color(0xFF10B981),
                                 fontFamily = FontFamily.Monospace,
@@ -179,7 +179,7 @@ fun SecurityDashboardScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "CASES IN SQLITE STORE",
+                    text = "RECENT CASES",
                     style = MaterialTheme.typography.labelSmall,
                     color = Color(0xFF64748B),
                     fontFamily = FontFamily.Monospace,
@@ -221,14 +221,14 @@ fun SecurityDashboardScreen(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "No cases recorded in SQLite yet",
+                            text = "No cases yet",
                             style = MaterialTheme.typography.titleMedium,
                             color = Color.White,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Click 'NEW FORENSIC CASE' above to create and save your first case.",
+                            text = "Create a case to begin a documented assessment.",
                             style = MaterialTheme.typography.bodySmall,
                             color = Color(0xFF94A3B8)
                         )

@@ -83,13 +83,13 @@ fun CaseRegistryScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
                     Text(
-                        text = "CASE REGISTRY",
+                        text = "Cases",
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "${records.size} cases in local SQLite",
+                        text = "${records.size} case${if (records.size == 1) "" else "s"}",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color(0xFF10B981)
                     )
@@ -103,7 +103,7 @@ fun CaseRegistryScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = onSearchChange,
-                placeholder = { Text("Search by Case #, IMEI, Device, Crime...", color = Color(0xFF64748B)) },
+                placeholder = { Text("Search cases", color = Color(0xFF64748B)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("registry_search_input"),
@@ -184,7 +184,7 @@ fun CaseRegistryScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = if (searchQuery.isNotBlank()) "No cases matching '$searchQuery'" else "No cases stored in SQLite",
+                        text = if (searchQuery.isNotBlank()) "No matching cases" else "No cases yet",
                         color = Color.White,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold

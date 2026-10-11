@@ -90,7 +90,7 @@ fun DecisionRecordDetailScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Loading case from SQLite...", color = Color(0xFF38BDF8), style = MaterialTheme.typography.titleMedium)
+            Text("Loading case…", color = Color(0xFF38BDF8), style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(14.dp))
             OutlinedButton(onClick = onBack) {
                 Text("Return to Dashboard", color = Color.White)
@@ -145,7 +145,7 @@ fun DecisionRecordDetailScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "$timestampFormatted • SQLite ID #${currentRecord.id}",
+                        text = timestampFormatted,
                         style = MaterialTheme.typography.labelSmall,
                         color = Color(0xFF64748B)
                     )
@@ -183,7 +183,7 @@ fun DecisionRecordDetailScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "RECOMMENDED FORENSIC METHOD",
+                                text = "RECOMMENDATION",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color(0xFF10B981),
                                 fontFamily = FontFamily.Monospace,
@@ -242,7 +242,7 @@ fun DecisionRecordDetailScreen(
                         Icon(Icons.Default.Build, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "ALLOCATED TOOLS FOR THIS CASE",
+                            text = "RECOMMENDED TOOLS",
                             style = MaterialTheme.typography.labelSmall,
                             color = Color(0xFF38BDF8),
                             fontFamily = FontFamily.Monospace,
@@ -250,7 +250,7 @@ fun DecisionRecordDetailScreen(
                         )
                     }
                     Text(
-                        text = "Tailored for ${currentRecord.deviceType}",
+                            text = currentRecord.deviceType,
                         style = MaterialTheme.typography.labelSmall,
                         color = Color(0xFF94A3B8)
                     )
@@ -334,7 +334,7 @@ fun DecisionRecordDetailScreen(
                             Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "CASE & DEVICE SPECIFICATIONS",
+                            text = "CASE DETAILS",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color(0xFF10B981),
                                 fontFamily = FontFamily.Monospace,
@@ -390,7 +390,7 @@ fun DecisionRecordDetailScreen(
                             Icon(Icons.Default.Person, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "EXAMINER CREDENTIALS",
+                            text = "EXAMINER",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color(0xFF38BDF8),
                                 fontFamily = FontFamily.Monospace,
@@ -431,7 +431,7 @@ fun DecisionRecordDetailScreen(
                         ) {
                             Icon(Icons.Default.Security, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Supervisor Review")
+                        Text("Review")
                         }
                     }
 
@@ -447,7 +447,7 @@ fun DecisionRecordDetailScreen(
                     ) {
                         Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Export Report")
+                        Text("Export")
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -461,7 +461,7 @@ fun DecisionRecordDetailScreen(
             onDismissRequest = { showSupervisorDialog = false },
             containerColor = Color(0xFF0F172A),
             title = {
-                Text("SUPERVISOR SIGN-OFF", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("Supervisor review", color = Color.White, fontWeight = FontWeight.Bold)
             },
             text = {
                 Column {

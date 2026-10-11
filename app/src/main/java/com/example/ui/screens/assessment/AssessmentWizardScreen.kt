@@ -141,13 +141,13 @@ fun AssessmentWizardScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
                     Text(
-                        text = "NEW FORENSIC CASE",
+                        text = "New case",
                         style = MaterialTheme.typography.titleMedium,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "SQLite Case Setup & Tool Allocation",
+                        text = "Case details and tool recommendation",
                         style = MaterialTheme.typography.bodySmall,
                         color = Color(0xFF10B981)
                     )
@@ -180,7 +180,7 @@ fun AssessmentWizardScreen(
                             Icon(Icons.Default.Shield, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "CASE IDENTIFICATION",
+                                text = "CASE DETAILS",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color(0xFF38BDF8),
                                 fontFamily = FontFamily.Monospace,
@@ -287,7 +287,7 @@ fun AssessmentWizardScreen(
                             Icon(Icons.Default.PhoneAndroid, contentDescription = null, tint = Color(0xFF10B981), modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "TARGET EVIDENCE & DEVICE TYPE",
+                                text = "EVIDENCE DEVICE",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = Color(0xFF10B981),
                                 fontFamily = FontFamily.Monospace,
@@ -422,8 +422,8 @@ fun AssessmentWizardScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Cloud Scope Authorized in Warrant", style = MaterialTheme.typography.bodyMedium, color = Color.White, fontWeight = FontWeight.Medium)
-                                Text("Extract iCloud / Google / WhatsApp backups", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8))
+                                Text("Cloud access authorised", style = MaterialTheme.typography.bodyMedium, color = Color.White, fontWeight = FontWeight.Medium)
+                                Text("Include cloud-backed evidence", style = MaterialTheme.typography.labelSmall, color = Color(0xFF94A3B8))
                             }
                             Switch(
                                 checked = formState.cloudScopeAuthorized,
@@ -444,7 +444,7 @@ fun AssessmentWizardScreen(
                 }
             }
 
-            // ALLOCATED TOOLS FOR THIS CASE (DYNAMICALLY CALCULATED)
+            // Legal authority
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -485,7 +485,7 @@ fun AssessmentWizardScreen(
                 }
             }
 
-            // ALLOCATED TOOLS FOR THIS CASE (DYNAMICALLY CALCULATED)
+            // Recommended tools
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -496,7 +496,7 @@ fun AssessmentWizardScreen(
                         Icon(Icons.Default.Build, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "ALLOCATED TOOLS FOR THIS CASE",
+                            text = "RECOMMENDED TOOLS",
                             style = MaterialTheme.typography.labelSmall,
                             color = Color(0xFF38BDF8),
                             fontFamily = FontFamily.Monospace,
@@ -504,7 +504,7 @@ fun AssessmentWizardScreen(
                         )
                     }
                     Text(
-                        text = "${formState.selectedTools.size} Assigned",
+                        text = "${formState.selectedTools.size} selected",
                         style = MaterialTheme.typography.labelSmall,
                         color = Color(0xFF10B981),
                         fontWeight = FontWeight.Bold

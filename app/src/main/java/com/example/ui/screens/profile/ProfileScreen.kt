@@ -109,7 +109,7 @@ fun ProfileScreen(
         }
 
         // Officer Info Card
-        SectionCard(title = "OFFICER PROFILE & CREDENTIALS", icon = Icons.Default.Security) {
+        SectionCard(title = "PROFILE", icon = Icons.Default.Security) {
             DetailRow(label = "Full Name", value = name)
             DetailRow(label = "Officer ID / Badge", value = id, isMonospace = true)
             DetailRow(label = "Operational Role", value = role)
@@ -118,15 +118,15 @@ fun ProfileScreen(
         }
 
         // Offline Database Card
-        SectionCard(title = "OFFLINE STORAGE INTEGRITY", icon = Icons.Default.Storage) {
-            DetailRow(label = "Database Engine", value = "Local Room SQLite (Encrypted / On-Device)")
-            DetailRow(label = "Network Status", value = "Air-Gapped / Offline Capable")
-            DetailRow(label = "Evidentiary Standard", value = "ISO/IEC 27037 Contemporaneous Logging")
+        SectionCard(title = "APP STATUS", icon = Icons.Default.Storage) {
+            DetailRow(label = "Storage", value = "On-device")
+            DetailRow(label = "Network", value = "Offline ready")
+            DetailRow(label = "Standard", value = "ISO/IEC 27037 logging")
         }
 
-        SectionCard(title = "REFERENCE & GOVERNANCE", icon = Icons.Default.Shield) {
+        SectionCard(title = "REFERENCE", icon = Icons.Default.Shield) {
             Text(
-                text = "Consult legal authority, tool guidance, and the decision-support framework without leaving the app.",
+                text = "Legal guidance, tool information, and framework notes.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color(0xFF94A3B8)
             )
